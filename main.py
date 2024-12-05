@@ -1,27 +1,18 @@
-from doctest import master
 import tkinter as tk
 from customtkinter import StringVar
 import customtkinter
 import pyperclip
-import re
-# from UX0l0lCTkColorPicker import *
-
+import sys
+import os
 from AkascapeCTkColorPicker import *
 
-app = customtkinter.CTk()
-app.title("Color Picker")
 
-NotifyLabel = None
-btnRGB666 = None
-btnRGB565 = None
-textbox888 = None
-textbox565 = None
-
-switch_var = customtkinter.StringVar(value="off")
-
-rgb888Var = customtkinter.StringVar()
-rgb565Var = customtkinter.StringVar()
-
+def load_media(name):
+    if getattr(sys, 'frozen', False):  # 判断程序是否打包成了可执行文件
+        img_path = os.path.join(sys._MEIPASS, name)  # 获取临时解压目录中的路径
+    else:
+        img_path = name  # 如果是源代码模式，则直接使用相对路径
+    return img_path
 
 def configtextColor() -> bool:
     return switch_var.get() == 'off'
@@ -48,7 +39,7 @@ def RGB888toRGB565(hex_str: str):
 
 def RGB5665toRGB888(rgb565: str):
     # Extract the RGB components from the RGB565 value
-    rgb565 = int(rgb565.lstrip('0x'), 16)
+    rgb565 = int(rgb565[2:], 16)
     r = (rgb565 >> 11) & 0x1F
     g = (rgb565 >> 5) & 0x3F
     b = rgb565 & 0x1F
@@ -122,11 +113,21 @@ def is_valid_rgb888(input_str):
 
 
 def is_valid_rgb565(input_str):
-    # print("is_valid_rgb565" ,input_str.startswith("0x"))
     if input_str and input_str.startswith("0x"):
+        # 去掉前缀"0x"，并检查剩下的部分是否是有效的16进制数
+        hex_str = input_str[2:]
+        # print(hex_str,len(hex_str))
+        if len(hex_str) != 4:  # RGB565总共是16位，需要4个十六进制字符
+            return False
         try:
-            r, g, b = tuple(int(input_str.lstrip('0x')[i:i + 2], 16) for i in (0, 1, 3))
-            return True
+            # 将十六进制字符串转换为整数
+            color_value = int(hex_str, 16)
+
+            # print(color_value)
+            if 0 <= color_value <= 0xFFFF:
+                return True
+            else:
+                return False
         except ValueError:
             return False
     return False
@@ -145,15 +146,28 @@ def rgb888textChange(e):
 def rgb585textChange(e):
     # print(f"input is rgb565{is_valid_rgb565(textbox565.get('1.0', tk.END))}")
     color = textbox565.get()
-    print(color)
+    # print(color)
     if is_valid_rgb565(color):
         # print(f"color {color}")
         color888 = RGB5665toRGB888(color)
         colorpickerhandler(color888)
         rgb888textChange(e)
 
-
 if __name__=='__main__':
+    app = customtkinter.CTk()
+    app.title("Color Picker")
+    app.iconbitmap(load_media('color_wheel_cropped.ico'))
+    NotifyLabel = None
+    btnRGB666 = None
+    btnRGB565 = None
+    textbox888 = None
+    textbox565 = None
+
+    switch_var = customtkinter.StringVar(value="off")
+
+    rgb888Var = customtkinter.StringVar()
+    rgb565Var = customtkinter.StringVar()
+
     switch = customtkinter.CTkSwitch(app, text="FG Color", command=switch_event,
                                      variable=switch_var, onvalue="on", offvalue="off")
     LABEL_WIDTH, LABEL_HEIGH = 100, 40

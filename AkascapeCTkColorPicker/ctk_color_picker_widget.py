@@ -12,6 +12,13 @@ import colorsys
 PATH = os.path.dirname(os.path.realpath(__file__))
 
 
+def load_media(name):
+    if getattr(sys, 'frozen', False):  # 判断程序是否打包成了可执行文件
+        img_path = os.path.join(sys._MEIPASS, name)  # 获取临时解压目录中的路径
+    else:
+        img_path = name  # 如果是源代码模式，则直接使用相对路径
+    return img_path
+
 class CTkColorPicker(customtkinter.CTkFrame):
 
     def __init__(self,
@@ -52,10 +59,10 @@ class CTkColorPicker(customtkinter.CTkFrame):
         self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
         self.canvas.bind("<Button-1>", self.on_mouse_drag)
 
-        self.img1 = Image.open(os.path.join(PATH, 'color_wheel.png')).resize(
+        self.img1 = Image.open(load_media('color_wheel.png')).resize(
             (self.image_dimension, self.image_dimension), Image.Resampling.LANCZOS)
-        self.img2 = Image.open(os.path.join(PATH, 'target.png')).resize((self.target_dimension, self.target_dimension),
-                                                                        Image.Resampling.LANCZOS)
+        self.img2 = Image.open(load_media('target.png')).resize((self.target_dimension, self.target_dimension),
+                                                       Image.Resampling.LANCZOS)
 
         self.wheel = ImageTk.PhotoImage(self.img1)
         self.target = ImageTk.PhotoImage(self.img2)
@@ -164,7 +171,7 @@ class CTkColorPicker(customtkinter.CTkFrame):
 
             self.default_hex_color = initial_color
             self.target_x, self.target_y = self.set_target_position(r, g, b)
-            print(f"x{self.target_x},y{self.target_y}")
+            # print(f"x{self.target_x},y{self.target_y}")
             return self.canvas.create_image(self.target_x, self.target_y, image=self.target)
 
         return self.canvas.create_image(self.image_dimension / 2, self.image_dimension / 2, image=self.target)
@@ -172,7 +179,7 @@ class CTkColorPicker(customtkinter.CTkFrame):
     # 根据颜色RGB计算位置（极坐标位置）
     def set_target_position(self, r, g, b):
         h, s, v = rgb_to_hsv(r, g, b)
-        print(f"h{h},s{s},v{v}")
+        # print(f"h{h},s{s},v{v}")
         # 计算对应的极坐标位置
         # 根据图像的尺寸，将极坐标映射到屏幕坐标
         radius = s * min(self.image_dimension, self.image_dimension) / 2  # 半径由饱和度决定，映射到图像大小
@@ -183,7 +190,7 @@ class CTkColorPicker(customtkinter.CTkFrame):
         y = int(self.image_dimension / 2 + radius * math.sin(theta))  # 垂直坐标，注意y轴方向在图像中是反向的
         x = clamp(x, 1, 199)
         y = clamp(y, 1, 199)
-        print(f"x{x},y{y}")
+        # print(f"x{x},y{y}")
         self.slider.set(v * 255)
         return x, y
 
