@@ -4,6 +4,8 @@
 
 将rgb888转换为rgb565，方便调试嵌入式设备使用
 
+![software](.\images\main.png)
+
 ### V1.0
 
 基本功能完成
